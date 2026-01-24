@@ -1,0 +1,655 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SST GLOBALLED — Exames / ASO</title>
+  <style>
+    :root{
+      --bg:#0b0b0b; --card:#111; --border:#2a2a2a;
+      --text:#fff; --muted:rgba(255,255,255,.72);
+      --green:#0a7a33; --green2:#25D366;
+      --danger:#ff5c5c;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      background:var(--bg); color:var(--text);
+    }
+    .wrap{min-height:100vh; display:flex; align-items:flex-start; justify-content:center; padding:18px;}
+    .card{
+      width:100%; max-width:860px; background:rgba(255,255,255,.03);
+      border:1px solid var(--border); border-radius:18px; padding:16px;
+      box-shadow:0 18px 60px rgba(0,0,0,.45);
+    }
+    .top{
+      display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap;
+      margin-bottom:8px;
+    }
+    .chip{
+      font-size:12px; padding:8px 10px; border-radius:999px;
+      border:1px solid var(--border); background:rgba(0,0,0,.35); color:var(--muted);
+    }
+    .btn{
+      padding:10px 12px; border-radius:12px;
+      border:1px solid var(--border); background:#151515; color:#fff;
+      font-weight:650; font-size:14px; cursor:pointer; text-decoration:none;
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    }
+    .btn.primary{background:var(--green); border:none;}
+    .btn.whats{background:var(--green2); color:#000; border:none; font-weight:800;}
+    .btn.danger{background:#2a1414; border:1px solid #5a1d1d; color:#ffb3b3;}
+    h1{margin:6px 0 2px; font-size:26px; letter-spacing:1px;}
+    p.sub{margin:0 0 10px; color:var(--muted); line-height:1.5}
+    .grid{display:grid; gap:12px; grid-template-columns:repeat(2, minmax(0,1fr));}
+    .box{
+      border:1px solid var(--border); border-radius:14px; background:rgba(0,0,0,.35);
+      padding:12px;
+    }
+    .box h3{margin:0 0 10px; font-size:14px; color:var(--muted); text-transform:uppercase; letter-spacing:.6px}
+    label{display:block; font-size:12px; color:var(--muted); margin:8px 0 6px}
+    input, select, textarea{
+      width:100%; padding:12px; border-radius:12px;
+      border:1px solid var(--border); background:#0f0f0f; color:#fff;
+      outline:none;
+    }
+    textarea{min-height:80px; resize:vertical}
+    .row{display:grid; gap:10px; grid-template-columns:repeat(2, minmax(0,1fr));}
+    .row3{display:grid; gap:10px; grid-template-columns:repeat(3, minmax(0,1fr));}
+    .actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px}
+    .list{
+      border:1px solid var(--border); border-radius:14px; overflow:hidden; background:rgba(0,0,0,.35);
+      margin-top:12px;
+    }
+    .listHead{
+      padding:12px 14px; font-size:14px; letter-spacing:.6px;
+      background:rgba(255,255,255,.04); border-bottom:1px solid var(--border);
+      color:var(--muted); text-transform:uppercase;
+      display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;
+    }
+    .item{padding:12px 14px; border-top:1px solid var(--border); display:flex; flex-direction:column; gap:6px;}
+    .itemTop{display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; align-items:center;}
+    .item b{font-size:14px}
+    .meta{font-size:12px; color:var(--muted)}
+    .itemBtns{display:flex; gap:8px; flex-wrap:wrap}
+    .small{font-size:12px; padding:8px 10px; border-radius:10px}
+    .empty{padding:14px; color:var(--muted); font-size:14px}
+    @media (max-width:700px){
+      .grid{grid-template-columns:1fr}
+      .row,.row3{grid-template-columns:1fr}
+    }
+    .printArea{display:none}
+    @media print{
+      body{background:#fff; color:#000}
+      .wrap{padding:0}
+      .card{box-shadow:none; border:none; background:#fff}
+      .noPrint{display:none !important}
+      .printArea{display:block}
+      .printBox{border:1px solid #000; padding:12px; margin:12px 0}
+      .printBox h2{margin:0 0 8px}
+      .printBox p{margin:4px 0}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="top noPrint">
+        <div class="chip" id="statusChip">Status: carregando...</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <a class="btn" href="./dashboard.html">Dashboard</a>
+          <a class="btn" href="./employees.html">Funcionários</a>
+          <a class="btn" href="./index.html">Home</a>
+          <button class="btn danger" id="btnReset" type="button">Limpar exames</button>
+        </div>
+      </div>
+
+      <h1>Exames / ASO</h1>
+      <p class="sub">Cadastro de exames por funcionário (LocalStorage). Depois a gente gera PDF + QR.</p>
+
+      <div class="grid noPrint">
+        <div class="box">
+          <h3>Novo exame / ASO</h3>
+
+          <label>Funcionário *</label>
+          <select id="employeeSelect"></select>
+
+          <div class="row">
+            <div>
+              <label>Tipo *</label>
+              <select id="tipo">
+                <option value="Admissional">Admissional</option>
+                <option value="Periódico">Periódico</option>
+                <option value="Mudança de Função">Mudança de Função</option>
+                <option value="Retorno ao Trabalho">Retorno ao Trabalho</option>
+                <option value="Demissional">Demissional</option>
+                <option value="ASO (geral)">ASO (geral)</option>
+              </select>
+            </div>
+            <div>
+              <label>Status *</label>
+              <select id="status">
+                <option value="Pendente">Pendente</option>
+                <option value="Agendado">Agendado</option>
+                <option value="Concluído">Concluído</option>
+                <option value="Vencido">Vencido</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row3">
+            <div>
+              <label>Data do exame *</label>
+              <input id="dataExame" type="date" />
+            </div>
+            <div>
+              <label>Validade até</label>
+              <input id="validade" type="date" />
+            </div>
+            <div>
+              <label>Clínica / Médico</label>
+              <input id="clinica" placeholder="Ex: Clínica X / Dr. Fulano" />
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label>Aptidão</label>
+              <select id="aptidao">
+                <option value="">(não informado)</option>
+                <option value="Apto">Apto</option>
+                <option value="Apto com restrições">Apto com restrições</option>
+                <option value="Inapto">Inapto</option>
+              </select>
+            </div>
+            <div>
+              <label>Riscos/Observações</label>
+              <input id="riscos" placeholder="Ex: Trabalho em altura, ruído..." />
+            </div>
+          </div>
+
+          <label>Observações detalhadas</label>
+          <textarea id="obs" placeholder="Anotações, exames complementares, etc."></textarea>
+
+          <div class="actions">
+            <button class="btn primary" id="btnSalvar" type="button">Salvar exame</button>
+            <button class="btn" id="btnLimpar" type="button">Limpar formulário</button>
+          </div>
+
+          <div class="chip" style="margin-top:10px">
+            Total de exames: <b id="kpiExams">0</b>
+          </div>
+        </div>
+
+        <div class="box">
+          <h3>Filtrar / Buscar</h3>
+
+          <label>Filtrar por funcionário</label>
+          <select id="filterEmployee"></select>
+
+          <label>Buscar (tipo, clínica, status, observação)</label>
+          <input id="search" placeholder="Digite para filtrar..." />
+
+          <div class="actions">
+            <button class="btn" id="btnHoje" type="button">Exames de hoje</button>
+            <button class="btn" id="btnVencidos" type="button">Ver vencidos</button>
+            <button class="btn" id="btnTodos" type="button">Ver todos</button>
+          </div>
+
+          <div style="margin-top:12px">
+            <a class="btn whats" id="btnWhats" target="_blank" rel="noreferrer">Falar com a GLOBALLED</a>
+          </div>
+
+          <div class="chip" style="margin-top:10px">
+            Fonte: <b>exams_v1</b> • Funcionários: <b id="kpiEmployees">0</b>
+          </div>
+        </div>
+      </div>
+
+      <div class="list noPrint" id="list">
+        <div class="listHead">
+          <span>Lista de Exames</span>
+          <span class="meta" id="listMeta"></span>
+        </div>
+        <div id="listBody"></div>
+      </div>
+
+      <!-- Área de impressão (base) -->
+      <div class="printArea" id="printArea"></div>
+    </div>
+  </div>
+
+  <script>
+    // ===== CONFIG =====
+    const WHATS_NUMBER = "55SEUNUMEROAQUI"; // ex: 5511999999999
+    const WHATS_TEXT = "Olá! Vim pelo módulo de Exames/ASO do SST GLOBALLED.";
+    const KEY_EMP  = "employees_v1";
+    const KEY_EXAM = "exams_v1";
+
+    // ===== HELPERS =====
+    function safeParse(json, fallback){ try { return JSON.parse(json) ?? fallback; } catch(e){ return fallback; } }
+    function getArr(key){ return safeParse(localStorage.getItem(key), []); }
+    function setArr(key, arr){ localStorage.setItem(key, JSON.stringify(arr)); }
+    function uid(){ return "id_" + Date.now() + "_" + Math.random().toString(16).slice(2); }
+    function esc(str){
+      return String(str ?? "").replace(/[&<>"']/g, (m)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+    }
+    function setStatus(ok){
+      const el = document.getElementById("statusChip");
+      el.textContent = ok ? "Status: online" : "Status: erro local";
+      el.style.color = ok ? "rgba(255,255,255,.8)" : "#ffb3b3";
+      el.style.borderColor = ok ? "var(--border)" : "#5a1d1d";
+      el.style.background = ok ? "rgba(0,0,0,.35)" : "#2a1414";
+    }
+    function fmtDate(d){
+      if(!d) return "";
+      try{
+        const dt = new Date(d + "T00:00:00");
+        return dt.toLocaleDateString("pt-BR");
+      }catch(e){ return d; }
+    }
+    function isExpired(validade){
+      if(!validade) return false;
+      const today = new Date(); today.setHours(0,0,0,0);
+      const dt = new Date(validade + "T00:00:00");
+      return dt < today;
+    }
+
+    // ===== STATE =====
+    let employees = [];
+    let exams = [];
+    let editingId = null;
+
+    // ===== UI GET =====
+    const elEmployeeSelect = document.getElementById("employeeSelect");
+    const elFilterEmployee = document.getElementById("filterEmployee");
+    const elTipo = document.getElementById("tipo");
+    const elStatus = document.getElementById("status");
+    const elDataExame = document.getElementById("dataExame");
+    const elValidade = document.getElementById("validade");
+    const elClinica = document.getElementById("clinica");
+    const elAptidao = document.getElementById("aptidao");
+    const elRiscos = document.getElementById("riscos");
+    const elObs = document.getElementById("obs");
+    const elSearch = document.getElementById("search");
+    const elListBody = document.getElementById("listBody");
+    const elListMeta = document.getElementById("listMeta");
+
+    function employeeLabel(e){
+      const nome = e.nome || e.name || e.funcionario || "Sem nome";
+      const cpf = e.cpf ? (" • CPF: " + e.cpf) : "";
+      const empresa = e.empresa ? (" • " + e.empresa) : "";
+      return nome + cpf + empresa;
+    }
+
+    function populateEmployees(){
+      // select principal
+      elEmployeeSelect.innerHTML = "";
+      if(!employees.length){
+        elEmployeeSelect.innerHTML = `<option value="">(Nenhum funcionário cadastrado)</option>`;
+      } else {
+        employees.forEach(e=>{
+          const id = e.id || e._id || e.cpf || uid(); // fallback
+          // garante id estável
+          if(!e.id) e.id = id;
+          const opt = document.createElement("option");
+          opt.value = e.id;
+          opt.textContent = employeeLabel(e);
+          elEmployeeSelect.appendChild(opt);
+        });
+      }
+
+      // filtro
+      elFilterEmployee.innerHTML = "";
+      const optAll = document.createElement("option");
+      optAll.value = "";
+      optAll.textContent = "(Todos)";
+      elFilterEmployee.appendChild(optAll);
+      employees.forEach(e=>{
+        const opt = document.createElement("option");
+        opt.value = e.id;
+        opt.textContent = employeeLabel(e);
+        elFilterEmployee.appendChild(opt);
+      });
+
+      document.getElementById("kpiEmployees").textContent = employees.length;
+    }
+
+    function clearForm(){
+      editingId = null;
+      document.getElementById("btnSalvar").textContent = "Salvar exame";
+      elTipo.value = "Admissional";
+      elStatus.value = "Pendente";
+      elDataExame.value = "";
+      elValidade.value = "";
+      elClinica.value = "";
+      elAptidao.value = "";
+      elRiscos.value = "";
+      elObs.value = "";
+    }
+
+    function saveExam(){
+      const empId = elEmployeeSelect.value;
+      if(!empId){ alert("Cadastre/Selecione um funcionário primeiro."); return; }
+
+      const tipo = elTipo.value.trim();
+      const status = elStatus.value.trim();
+      const dataExame = elDataExame.value;
+      if(!dataExame){ alert("Informe a data do exame."); return; }
+
+      const payload = {
+        id: editingId || uid(),
+        employeeId: empId,
+        tipo,
+        status,
+        dataExame,
+        validade: elValidade.value || "",
+        clinica: elClinica.value.trim(),
+        aptidao: elAptidao.value,
+        riscos: elRiscos.value.trim(),
+        obs: elObs.value.trim(),
+        updatedAt: new Date().toISOString(),
+        createdAt: editingId ? undefined : new Date().toISOString()
+      };
+
+      if(editingId){
+        exams = exams.map(x => x.id === editingId ? ({...x, ...payload, createdAt: x.createdAt || new Date().toISOString()}) : x);
+      }else{
+        payload.createdAt = new Date().toISOString();
+        exams.push(payload);
+      }
+
+      setArr(KEY_EXAM, exams);
+      clearForm();
+      render();
+    }
+
+    function editExam(id){
+      const x = exams.find(e=>e.id===id);
+      if(!x) return;
+
+      editingId = id;
+      document.getElementById("btnSalvar").textContent = "Atualizar exame";
+
+      elEmployeeSelect.value = x.employeeId;
+      elTipo.value = x.tipo || "Admissional";
+      elStatus.value = x.status || "Pendente";
+      elDataExame.value = x.dataExame || "";
+      elValidade.value = x.validade || "";
+      elClinica.value = x.clinica || "";
+      elAptidao.value = x.aptidao || "";
+      elRiscos.value = x.riscos || "";
+      elObs.value = x.obs || "";
+
+      window.scrollTo({top:0, behavior:"smooth"});
+    }
+
+    function delExam(id){
+      const ok = confirm("Apagar este exame?");
+      if(!ok) return;
+      exams = exams.filter(e=>e.id!==id);
+      setArr(KEY_EXAM, exams);
+      render();
+    }
+
+    function printExam(id){
+      const x = exams.find(e=>e.id===id);
+      if(!x) return;
+      const emp = employees.find(e=>e.id===x.employeeId) || {};
+
+      const html = `
+        <div class="printBox">
+          <h2>ASO / Exame — SST GLOBALLED</h2>
+          <p><b>Funcionário:</b> ${esc(emp.nome || emp.name || "—")}</p>
+          <p><b>CPF:</b> ${esc(emp.cpf || "—")}</p>
+          <p><b>Empresa:</b> ${esc(emp.empresa || "—")}</p>
+          <hr/>
+          <p><b>Tipo:</b> ${esc(x.tipo || "—")}</p>
+          <p><b>Status:</b> ${esc(x.status || "—")}</p>
+          <p><b>Data:</b> ${esc(fmtDate(x.dataExame) || "—")}</p>
+          <p><b>Validade:</b> ${esc(fmtDate(x.validade) || "—")}</p>
+          <p><b>Clínica/Médico:</b> ${esc(x.clinica || "—")}</p>
+          <p><b>Aptidão:</b> ${esc(x.aptidao || "—")}</p>
+          <p><b>Riscos:</b> ${esc(x.riscos || "—")}</p>
+          <p><b>Observações:</b> ${esc(x.obs || "—")}</p>
+          <hr/>
+          <p><small>Gerado em ${new Date().toLocaleString("pt-BR")}</small></p>
+        </div>
+      `;
+      document.getElementById("printArea").innerHTML = html;
+      window.print();
+    }
+
+    function getFiltered(){
+      const fEmp = elFilterEmployee.value;
+      const q = (elSearch.value || "").toLowerCase().trim();
+
+      let arr = [...exams];
+
+      if(fEmp) arr = arr.filter(x => x.employeeId === fEmp);
+
+      if(q){
+        arr = arr.filter(x=>{
+          return (
+            (x.tipo||"").toLowerCase().includes(q) ||
+            (x.status||"").toLowerCase().includes(q) ||
+            (x.clinica||"").toLowerCase().includes(q) ||
+            (x.obs||"").toLowerCase().includes(q) ||
+            (x.riscos||"").toLowerCase().includes(q)
+          );
+        });
+      }
+
+      // ordena por data desc
+      arr.sort((a,b)=> (b.dataExame||"").localeCompare(a.dataExame||""));
+      return arr;
+    }
+
+    function render(){
+      document.getElementById("kpiExams").textContent = exams.length;
+
+      const arr = getFiltered();
+      elListMeta.textContent = `Mostrando ${arr.length} de ${exams.length}`;
+
+      if(!arr.length){
+        elListBody.innerHTML = `<div class="empty">Nenhum exame encontrado.</div>`;
+        return;
+      }
+
+      elListBody.innerHTML = "";
+      arr.forEach(x=>{
+        const emp = employees.find(e=>e.id===x.employeeId) || {};
+        const empName = emp.nome || emp.name || "Funcionário não encontrado";
+        const expired = isExpired(x.validade);
+
+        const badge = expired
+          ? `<span class="chip" style="border-color:#5a1d1d;background:#2a1414;color:#ffb3b3">VENCIDO</span>`
+          : (x.status === "Concluído"
+              ? `<span class="chip" style="border-color:#1d5a2a;background:#142a1a;color:#bfffd0">OK</span>`
+              : `<span class="chip">Em andamento</span>`);
+
+        elListBody.innerHTML += `
+          <div class="item">
+            <div class="itemTop">
+              <div>
+                <b>${esc(empName)} — ${esc(x.tipo || "")}</b>
+                <div class="meta">
+                  Data: ${esc(fmtDate(x.dataExame))} • Validade: ${esc(fmtDate(x.validade) || "—")}
+                  • Status: ${esc(x.status || "—")}
+                </div>
+                <div class="meta">
+                  Clínica: ${esc(x.clinica || "—")} • Aptidão: ${esc(x.aptidao || "—")}
+                </div>
+              </div>
+              <div>${badge}</div>
+            </div>
+
+            <div class="meta">
+              Riscos: ${esc(x.riscos || "—")}
+            </div>
+
+            ${x.obs ? `<div class="meta">Obs: ${esc(x.obs)}</div>` : ""}
+
+            <div class="itemBtns">
+              <button class="btn small" type="button" data-edit="${esc(x.id)}">Editar</button>
+              <button class="btn small" type="button" data-print="${esc(x.id)}">Imprimir</button>
+              <button class="btn small danger" type="button" data-del="${esc(x.id)}">Apagar</button>
+            </div>
+          </div>
+        `;
+      });
+
+      // bind buttons
+      elListBody.querySelectorAll("[data-edit]").forEach(b=>{
+        b.addEventListener("click", ()=> editExam(b.getAttribute("data-edit")));
+      });
+      elListBody.querySelectorAll("[data-del]").forEach(b=>{
+        b.addEventListener("click", ()=> delExam(b.getAttribute("data-del")));
+      });
+      elListBody.querySelectorAll("[data-print]").forEach(b=>{
+        b.addEventListener("click", ()=> printExam(b.getAttribute("data-print")));
+      });
+    }
+
+    // ===== QUICK FILTERS =====
+    function showToday(){
+      const today = new Date(); today.setHours(0,0,0,0);
+      elSearch.value = "";
+      elFilterEmployee.value = "";
+      const iso = today.toISOString().slice(0,10);
+      // filtra pelo search usando um hack: render manual
+      const arr = exams.filter(x=>x.dataExame===iso).sort((a,b)=> (b.dataExame||"").localeCompare(a.dataExame||""));
+      elListMeta.textContent = `Exames de hoje: ${arr.length}`;
+      if(!arr.length){ elListBody.innerHTML = `<div class="empty">Nenhum exame para hoje.</div>`; return; }
+      // temporário: render sem mexer no estado
+      const prev = exams;
+      const saved = exams;
+      // render usando função existente: substitui exams momentaneamente
+      const keep = exams;
+      const all = exams;
+      // faz render "manual" usando arr
+      elListBody.innerHTML = "";
+      arr.forEach(x=>{
+        const emp = employees.find(e=>e.id===x.employeeId) || {};
+        const empName = emp.nome || emp.name || "Funcionário não encontrado";
+        const expired = isExpired(x.validade);
+        const badge = expired
+          ? `<span class="chip" style="border-color:#5a1d1d;background:#2a1414;color:#ffb3b3">VENCIDO</span>`
+          : `<span class="chip">Hoje</span>`;
+        elListBody.innerHTML += `
+          <div class="item">
+            <div class="itemTop">
+              <div>
+                <b>${esc(empName)} — ${esc(x.tipo || "")}</b>
+                <div class="meta">
+                  Data: ${esc(fmtDate(x.dataExame))} • Validade: ${esc(fmtDate(x.validade) || "—")}
+                  • Status: ${esc(x.status || "—")}
+                </div>
+              </div>
+              <div>${badge}</div>
+            </div>
+            <div class="itemBtns">
+              <button class="btn small" type="button" data-edit="${esc(x.id)}">Editar</button>
+              <button class="btn small" type="button" data-print="${esc(x.id)}">Imprimir</button>
+              <button class="btn small danger" type="button" data-del="${esc(x.id)}">Apagar</button>
+            </div>
+          </div>
+        `;
+      });
+      elListBody.querySelectorAll("[data-edit]").forEach(b=>{
+        b.addEventListener("click", ()=> editExam(b.getAttribute("data-edit")));
+      });
+      elListBody.querySelectorAll("[data-del]").forEach(b=>{
+        b.addEventListener("click", ()=> delExam(b.getAttribute("data-del")));
+      });
+      elListBody.querySelectorAll("[data-print]").forEach(b=>{
+        b.addEventListener("click", ()=> printExam(b.getAttribute("data-print")));
+      });
+    }
+
+    function showExpired(){
+      elSearch.value = "";
+      const arr = exams.filter(x=>isExpired(x.validade)).sort((a,b)=> (b.validade||"").localeCompare(a.validade||""));
+      elListMeta.textContent = `Vencidos: ${arr.length}`;
+      if(!arr.length){ elListBody.innerHTML = `<div class="empty">Nenhum vencido.</div>`; return; }
+
+      elListBody.innerHTML = "";
+      arr.forEach(x=>{
+        const emp = employees.find(e=>e.id===x.employeeId) || {};
+        const empName = emp.nome || emp.name || "Funcionário não encontrado";
+        elListBody.innerHTML += `
+          <div class="item">
+            <div class="itemTop">
+              <div>
+                <b>${esc(empName)} — ${esc(x.tipo || "")}</b>
+                <div class="meta">
+                  Data: ${esc(fmtDate(x.dataExame))} • Validade: ${esc(fmtDate(x.validade) || "—")}
+                  • Status: ${esc(x.status || "—")}
+                </div>
+              </div>
+              <div><span class="chip" style="border-color:#5a1d1d;background:#2a1414;color:#ffb3b3">VENCIDO</span></div>
+            </div>
+            <div class="itemBtns">
+              <button class="btn small" type="button" data-edit="${esc(x.id)}">Editar</button>
+              <button class="btn small" type="button" data-print="${esc(x.id)}">Imprimir</button>
+              <button class="btn small danger" type="button" data-del="${esc(x.id)}">Apagar</button>
+            </div>
+          </div>
+        `;
+      });
+
+      elListBody.querySelectorAll("[data-edit]").forEach(b=>{
+        b.addEventListener("click", ()=> editExam(b.getAttribute("data-edit")));
+      });
+      elListBody.querySelectorAll("[data-del]").forEach(b=>{
+        b.addEventListener("click", ()=> delExam(b.getAttribute("data-del")));
+      });
+      elListBody.querySelectorAll("[data-print]").forEach(b=>{
+        b.addEventListener("click", ()=> printExam(b.getAttribute("data-print")));
+      });
+    }
+
+    // ===== INIT =====
+    (function(){
+      try{
+        employees = getArr(KEY_EMP);
+        // garante id estável em todos
+        employees.forEach(e=>{ if(!e.id) e.id = uid(); });
+        setArr(KEY_EMP, employees);
+
+        exams = getArr(KEY_EXAM);
+
+        populateEmployees();
+
+        // Whats
+        const link = "https://wa.me/" + WHATS_NUMBER + "?text=" + encodeURIComponent(WHATS_TEXT);
+        document.getElementById("btnWhats").href = link;
+
+        // bind
+        document.getElementById("btnSalvar").addEventListener("click", saveExam);
+        document.getElementById("btnLimpar").addEventListener("click", clearForm);
+        document.getElementById("btnReset").addEventListener("click", ()=>{
+          const ok = confirm("Apagar TODOS os exames deste navegador?");
+          if(!ok) return;
+          localStorage.removeItem(KEY_EXAM);
+          exams = [];
+          render();
+        });
+
+        elFilterEmployee.addEventListener("change", render);
+        elSearch.addEventListener("input", render);
+
+        document.getElementById("btnHoje").addEventListener("click", showToday);
+        document.getElementById("btnVencidos").addEventListener("click", showExpired);
+        document.getElementById("btnTodos").addEventListener("click", ()=>{ elSearch.value=""; elFilterEmployee.value=""; render(); });
+
+        setStatus(true);
+        render();
+      }catch(e){
+        console.error(e);
+        setStatus(false);
+      }
+    })();
+  </script>
+</body>
+</html>
