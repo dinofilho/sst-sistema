@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SST GLOBALLED — Dashboard</title>
+  <style>
+    :root{
+      --bg:#0b0b0b; --card:#111; --border:#2a2a2a;
+      --text:#fff; --muted:rgba(255,255,255,.72);
+      --green:#0a7a33; --green2:#25D366;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      background:var(--bg); color:var(--text);
+    }
+    .wrap{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:22px;}
+    .card{
+      width:100%; max-width:720px; background:rgba(255,255,255,.03);
+      border:1px solid var(--border); border-radius:18px; padding:18px;
+      box-shadow:0 18px 60px rgba(0,0,0,.45);
+    }
+    h1{margin:6px 0 2px; font-size:28px; letter-spacing:1px; text-align:center;}
+    p.sub{margin:0 0 14px; text-align:center; color:var(--muted); line-height:1.5}
+    .grid{
+      display:grid; gap:12px; grid-template-columns:repeat(2, minmax(0,1fr));
+      margin-top:10px;
+    }
+    .kpi{
+      background:rgba(0,0,0,.35);
+      border:1px solid var(--border);
+      border-radius:14px; padding:14px;
+    }
+    .kpi small{display:block; color:var(--muted); margin-bottom:6px}
+    .kpi b{font-size:26px}
+    .kpi .tag{
+      display:inline-block; margin-top:10px; font-size:12px;
+      padding:6px 10px; border-radius:999px;
+      border:1px solid var(--border); color:var(--muted);
+    }
+
+    .actions{
+      display:flex; flex-direction:column; gap:10px; margin-top:14px;
+    }
+    .btn{
+      width:100%; padding:14px 16px; border-radius:12px;
+      border:1px solid var(--border); background:#151515; color:#fff;
+      font-weight:650; font-size:16px; cursor:pointer;
+      text-decoration:none; display:inline-flex; align-items:center; justify-content:center;
+    }
+    .btn.primary{background:var(--green); border:none;}
+    .btn.whats{background:var(--green2); color:#000; border:none; font-weight:800;}
+    .row{
+      margin-top:14px; display:grid; gap:12px; grid-template-columns:1fr;
+    }
+    .list{
+      border:1px solid var(--border); border-radius:14px; overflow:hidden;
+      background:rgba(0,0,0,.35);
+    }
+    .list h3{
+      margin:0; padding:12px 14px; font-size:14px; letter-spacing:.6px;
+      background:rgba(255,255,255,.04); border-bottom:1px solid var(--border);
+      color:var(--muted); text-transform:uppercase;
+    }
+    .list .empty{
+      padding:14px; color:var(--muted); font-size:14px;
+    }
+    .item{
+      padding:12px 14px; border-top:1px solid var(--border);
+      display:flex; flex-direction:column; gap:4px;
+    }
+    .item b{font-size:14px}
+    .item span{font-size:12px; color:var(--muted)}
+    .topbar{
+      display:flex; justify-content:space-between; gap:10px; margin-bottom:10px;
+    }
+    .chip{
+      font-size:12px; padding:8px 10px; border-radius:999px;
+      border:1px solid var(--border); background:rgba(0,0,0,.35); color:var(--muted);
+    }
+    .danger{
+      background:#2a1414; border:1px solid #5a1d1d; color:#ffb3b3;
+    }
+    @media (max-width:520px){
+      .grid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="topbar">
+        <div class="chip" id="statusChip">Status: carregando...</div>
+        <button class="chip danger" id="btnReset" type="button">Limpar dados</button>
+      </div>
+
+      <h1>SST GLOBALLED</h1>
+      <p class="sub">Dashboard local (LocalStorage). Próximo passo: integrar banco (Supabase/Firebase).</p>
+
+      <div class="grid">
+        <div class="kpi">
+          <small>Empresas cadastradas</small>
+          <b id="kpiCompanies">0</b>
+          <div class="tag">Fonte: companies_v1</div>
+        </div>
+        <div class="kpi">
+          <small>Funcionários cadastrados</small>
+          <b id="kpiEmployees">0</b>
+          <div class="tag">Fonte: employees_v1</div>
+        </div>
+        <div class="kpi">
+          <small>Próximos passos</small>
+          <b style="font-size:14px; line-height:1.4; display:block; margin-top:6px">
+            1) Exames/ASO<br/>2) NR por funcionário<br/>3) PDF + QR validação
+          </b>
+          <div class="tag">Roadmap</div>
+        </div>
+        <div class="kpi">
+          <small>Ambiente</small>
+          <b style="font-size:14px; line-height:1.4; display:block; margin-top:6px">
+            GitHub Pages ✅<br/>Celular ✅<br/>Sem build ✅
+          </b>
+          <div class="tag" id="envTag">v1</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <a class="btn primary" href="./companies.html">Cadastrar Empresas</a>
+        <a class="btn" href="./employees.html">Funcionários</a>
+        <a class="btn" href="./index.html">Voltar Home</a>
+        <a class="btn whats" id="btnWhats" target="_blank" rel="noreferrer">Falar com a GLOBALLED</a>
+      </div>
+
+      <div class="row">
+        <div class="list" id="listCompanies">
+          <h3>Últimas empresas</h3>
+          <div class="empty">Nenhuma empresa cadastrada ainda.</div>
+        </div>
+
+        <div class="list" id="listEmployees">
+          <h3>Últimos funcionários</h3>
+          <div class="empty">Nenhum funcionário cadastrado ainda.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== CONFIG =====
+    const WHATS_NUMBER = "55SEUNUMEROAQUI"; // ex: 5511999999999
+    const WHATS_TEXT = "Olá! Vim pelo sistema SST GLOBALLED e preciso de suporte.";
+    const KEY_COMP = "companies_v1";
+    const KEY_EMP  = "employees_v1";
+
+    // ===== HELPERS =====
+    function safeParse(json, fallback){
+      try { return JSON.parse(json) ?? fallback; } catch(e){ return fallback; }
+    }
+    function getArr(key){
+      return safeParse(localStorage.getItem(key), []);
+    }
+    function setStatus(ok){
+      const el = document.getElementById("statusChip");
+      el.textContent = ok ? "Status: online" : "Status: erro local";
+      el.style.color = ok ? "rgba(255,255,255,.8)" : "#ffb3b3";
+      el.style.borderColor = ok ? "var(--border)" : "#5a1d1d";
+      el.style.background = ok ? "rgba(0,0,0,.35)" : "#2a1414";
+    }
+    function renderList(elId, arr, kind){
+      const box = document.getElementById(elId);
+      box.innerHTML = `<h3>${kind === "c" ? "Últimas empresas" : "Últimos funcionários"}</h3>`;
+
+      if(!arr.length){
+        box.innerHTML += `<div class="empty">Nenhum ${kind==="c"?"empresa":"funcionário"} cadastrado ainda.</div>`;
+        return;
+      }
+
+      const last = arr.slice(-5).reverse();
+      last.forEach((item)=>{
+        const name = (item.nome || item.empresa || item.razaoSocial || item.name || "Sem nome");
+        const extra =
+          kind==="c"
+            ? (item.cnpj ? `CNPJ: ${item.cnpj}` : (item.email ? `Email: ${item.email}` : ""))
+            : (item.cpf ? `CPF: ${item.cpf}` : (item.funcao ? `Função: ${item.funcao}` : ""));
+        const created = item.createdAt ? new Date(item.createdAt).toLocaleString("pt-BR") : "";
+        box.innerHTML += `
+          <div class="item">
+            <b>${escapeHtml(name)}</b>
+            <span>${escapeHtml(extra)} ${created ? " • " + created : ""}</span>
+          </div>
+        `;
+      });
+    }
+    function escapeHtml(str){
+      return String(str ?? "").replace(/[&<>"']/g, (m)=>({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+      }[m]));
+    }
+
+    // ===== INIT =====
+    (function(){
+      try{
+        const companies = getArr(KEY_COMP);
+        const employees = getArr(KEY_EMP);
+
+        document.getElementById("kpiCompanies").textContent = companies.length;
+        document.getElementById("kpiEmployees").textContent = employees.length;
+
+        renderList("listCompanies", companies, "c");
+        renderList("listEmployees", employees, "e");
+
+        // WhatsApp
+        const link = "https://wa.me/" + WHATS_NUMBER + "?text=" + encodeURIComponent(WHATS_TEXT);
+        const btnWhats = document.getElementById("btnWhats");
+        btnWhats.href = link;
+
+        setStatus(true);
+      }catch(e){
+        console.error(e);
+        setStatus(false);
+      }
+
+      // Reset
+      document.getElementById("btnReset").addEventListener("click", ()=>{
+        const ok = confirm("Tem certeza? Isso apaga empresas e funcionários salvos neste navegador.");
+        if(!ok) return;
+        localStorage.removeItem(KEY_COMP);
+        localStorage.removeItem(KEY_EMP);
+        location.reload();
+      });
+    })();
+  </script>
+</body>
+</html>
