@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SST GLOBALLED</title>
+  <meta name="description" content="Plataforma SST – Empresas, Funcionários, Dashboard e Validação." />
+  <style>
+    :root{
+      --bg:#0b0b0b;
+      --card:#121212;
+      --border:#2a2a2a;
+      --text:#ffffff;
+      --muted:rgba(255,255,255,.72);
+      --muted2:rgba(255,255,255,.45);
+      --green:#0a7a33;
+      --green2:#25D366;
+      --btn:#151515;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .wrap{
+      min-height: 100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 24px;
+    }
+    .card{
+      width: 100%;
+      max-width: 520px;
+      background: transparent;
+      text-align:center;
+    }
+    h1{
+      margin:0 0 10px;
+      font-size: 42px;
+      letter-spacing: .5px;
+    }
+    .subtitle{
+      margin:0 auto 26px;
+      max-width: 520px;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 18px;
+    }
+    .panel{
+      margin: 0 auto;
+      padding: 18px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+    .grid{
+      display:flex;
+      flex-direction:column;
+      gap: 12px;
+      margin-top: 6px;
+    }
+    a{ text-decoration:none; }
+    .btn{
+      width:100%;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--btn);
+      color: var(--text);
+      font-size: 18px;
+      font-weight: 600;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap: 10px;
+      transition: transform .06s ease, filter .15s ease, border-color .15s ease;
+    }
+    .btn:active{ transform: translateY(1px); }
+    .btn:hover{ filter: brightness(1.08); border-color: rgba(255,255,255,.22); }
+    .btn.primary{
+      background: var(--green);
+      border-color: rgba(0,0,0,.2);
+    }
+    .btn.whats{
+      background: var(--green2);
+      color:#000;
+      border-color: rgba(0,0,0,.15);
+      font-weight: 800;
+    }
+    .meta{
+      margin-top: 18px;
+      font-size: 12px;
+      color: var(--muted2);
+    }
+    .mini{
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--muted2);
+      display:flex;
+      gap: 10px;
+      justify-content:center;
+      flex-wrap:wrap;
+    }
+    .mini code{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      background: rgba(255,255,255,.06);
+      padding: 2px 6px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,.10);
+      color: rgba(255,255,255,.85);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>SST GLOBALLED</h1>
+      <p class="subtitle">
+        Plataforma inteligente de Gestão de Saúde e Segurança do Trabalho,
+        integrada ao eSocial e normas regulamentadoras.
+      </p>
+
+      <div class="panel">
+        <div class="grid">
+          <a href="./companies.html"><button class="btn primary">Cadastrar Empresas</button></a>
+          <a href="./employees.html"><button class="btn">Funcionários</button></a>
+          <a href="./dashboard.html"><button class="btn">Dashboard</button></a>
+          <a href="./certificados.html"><button class="btn">Validar Certificado</button></a>
+          <a id="whatsLink" href="#" target="_blank" rel="noreferrer">
+            <button class="btn whats">Falar com a GLOBALLED</button>
+          </a>
+        </div>
+
+        <div class="mini">
+          <span>Status: <code id="status">carregando…</code></span>
+          <span>Empresas salvas: <code id="countCompanies">0</code></span>
+          <span>Funcionários: <code id="countEmployees">0</code></span>
+        </div>
+
+        <div class="meta">Deploy OK — GitHub Pages</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 1) COLOQUE SEU WHATS AQUI (DDD + número, só dígitos)
+    // Ex: 5511999999999
+    const WHATS_NUMBER = "55SEUNUMEROAQUI";
+
+    // Monta link do WhatsApp
+    const msg = encodeURIComponent("Olá! Vim pelo sistema SST GLOBALLED. Preciso de atendimento.");
+    const url = (WHATS_NUMBER.includes("SEUNUMERO"))
+      ? "https://wa.me/"
+      : `https://wa.me/${WHATS_NUMBER}?text=${msg}`;
+    document.getElementById("whatsLink").href = url;
+
+    // 2) Mostra contadores (LocalStorage)
+    function safeParse(key){
+      try{ return JSON.parse(localStorage.getItem(key) || "[]"); }
+      catch(e){ return []; }
+    }
+    const companies = safeParse("sst_companies");
+    const employees = safeParse("sst_employees");
+
+    document.getElementById("countCompanies").textContent = String(companies.length);
+    document.getElementById("countEmployees").textContent = String(employees.length);
+
+    // 3) Status
+    document.getElementById("status").textContent = "online";
+  </script>
+</body>
+</html>
