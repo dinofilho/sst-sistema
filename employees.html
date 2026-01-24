@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Funcionários — SST GLOBALLED</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:#0b0b0b;
+  color:#fff;
+}
+.container{
+  max-width:800px;
+  margin:auto;
+  padding:20px;
+}
+h1{text-align:center;}
+.card{
+  background:#121212;
+  border:1px solid #2a2a2a;
+  border-radius:14px;
+  padding:20px;
+}
+label{
+  display:block;
+  margin-top:12px;
+  font-size:14px;
+  color:#ccc;
+}
+input,select{
+  width:100%;
+  padding:12px;
+  margin-top:6px;
+  border-radius:10px;
+  border:1px solid #333;
+  background:#0b0b0b;
+  color:#fff;
+}
+button{
+  width:100%;
+  margin-top:18px;
+  padding:14px;
+  border:none;
+  border-radius:12px;
+  background:#0a7a33;
+  color:#fff;
+  font-size:16px;
+  font-weight:bold;
+}
+.list{
+  margin-top:30px;
+}
+.item{
+  background:#0f0f0f;
+  border:1px solid #2a2a2a;
+  border-radius:10px;
+  padding:12px;
+  margin-bottom:10px;
+  font-size:14px;
+}
+a{color:#25D366;text-decoration:none;}
+.back{text-align:center;margin-top:20px;}
+</style>
+</head>
+
+<body>
+<div class="container">
+<h1>Funcionários</h1>
+
+<div class="card">
+<label>Empresa *</label>
+<select id="empresa"></select>
+
+<label>Nome do Funcionário *</label>
+<input id="nome">
+
+<label>CPF *</label>
+<input id="cpf">
+
+<label>Cargo</label>
+<input id="cargo">
+
+<label>Setor</label>
+<input id="setor">
+
+<button onclick="salvar()">Salvar Funcionário</button>
+</div>
+
+<div class="list" id="lista"></div>
+
+<div class="back">
+<a href="index.html">⬅ Voltar para Home</a>
+</div>
+</div>
+
+<script>
+const empresas = JSON.parse(localStorage.getItem("sst_companies")||"[]");
+const funcionarios = JSON.parse(localStorage.getItem("sst_employees")||"[]");
+
+const sel = document.getElementById("empresa");
+empresas.forEach(e=>{
+  const o=document.createElement("option");
+  o.value=e.empresa;
+  o.textContent=e.empresa;
+  sel.appendChild(o);
+});
+
+function salvar(){
+  const nome=document.getElementById("nome").value.trim();
+  const cpf=document.getElementById("cpf").value.trim();
+  if(!nome||!cpf){alert("Nome e CPF obrigatórios");return;}
+
+  funcionarios.push({
+    empresa:sel.value,
+    nome,cpf,
+    cargo:cargo.value,
+    setor:setor.value,
+    criadoEm:new Date().toISOString()
+  });
+
+  localStorage.setItem("sst_employees",JSON.stringify(funcionarios));
+  document.querySelectorAll("input").forEach(i=>i.value="");
+  listar();
+}
+
+function listar(){
+  const l=document.getElementById("lista");
+  l.innerHTML="<h3>Funcionários cadastrados</h3>";
+  if(funcionarios.length===0){
+    l.innerHTML+="<p style='color:#777'>Nenhum funcionário.</p>";
+    return;
+  }
+  funcionarios.forEach((f,i)=>{
+    l.innerHTML+=`
+      <div class="item">
+        <strong>${i+1}. ${f.nome}</strong><br>
+        Empresa: ${f.empresa}<br>
+        CPF: ${f.cpf}<br>
+        Cargo: ${f.cargo||"-"}
+      </div>`;
+  });
+}
+listar();
+</script>
+</body>
+</html>
