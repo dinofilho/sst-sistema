@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cadastro de Empresas — SST GLOBALLED</title>
+
+  <style>
+    body{
+      margin:0;
+      font-family: Arial, Helvetica, sans-serif;
+      background:#0b0b0b;
+      color:#fff;
+    }
+    .container{
+      max-width:700px;
+      margin:0 auto;
+      padding:20px;
+    }
+    h1{
+      text-align:center;
+      margin-bottom:10px;
+    }
+    p{
+      text-align:center;
+      color:rgba(255,255,255,.7);
+      margin-bottom:20px;
+    }
+    .card{
+      background:#121212;
+      border:1px solid #2a2a2a;
+      border-radius:14px;
+      padding:20px;
+    }
+    label{
+      display:block;
+      margin-top:12px;
+      font-size:14px;
+      color:#ccc;
+    }
+    input, textarea{
+      width:100%;
+      padding:12px;
+      margin-top:6px;
+      border-radius:10px;
+      border:1px solid #333;
+      background:#0b0b0b;
+      color:#fff;
+      font-size:15px;
+    }
+    textarea{ resize:vertical; }
+    button{
+      width:100%;
+      margin-top:20px;
+      padding:14px;
+      border:none;
+      border-radius:12px;
+      background:#0a7a33;
+      color:#fff;
+      font-size:16px;
+      font-weight:bold;
+      cursor:pointer;
+    }
+    button:hover{ filter:brightness(1.1); }
+    .back{
+      margin-top:16px;
+      text-align:center;
+    }
+    .back a{
+      color:#25D366;
+      text-decoration:none;
+      font-size:14px;
+    }
+    .list{
+      margin-top:30px;
+    }
+    .empresa{
+      border:1px solid #2a2a2a;
+      border-radius:10px;
+      padding:12px;
+      margin-bottom:10px;
+      background:#0f0f0f;
+      font-size:14px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Cadastro de Empresas</h1>
+    <p>Os dados ficam salvos no seu navegador (LocalStorage).</p>
+
+    <div class="card">
+      <label>Empresa *</label>
+      <input id="empresa" placeholder="Ex: GLOBALLED SST" />
+
+      <label>CNPJ *</label>
+      <input id="cnpj" placeholder="00.000.000/0000-00" />
+
+      <label>E-mail</label>
+      <input id="email" placeholder="contato@empresa.com.br" />
+
+      <label>Telefone</label>
+      <input id="telefone" placeholder="(11) 99999-9999" />
+
+      <label>Responsável</label>
+      <input id="responsavel" placeholder="Nome do responsável" />
+
+      <label>CNAE</label>
+      <input id="cnae" placeholder="4120-4/00" />
+
+      <label>Endereço</label>
+      <input id="endereco" placeholder="Rua, número, cidade - UF" />
+
+      <label>Observações</label>
+      <textarea id="obs" rows="3"></textarea>
+
+      <button onclick="salvarEmpresa()">Salvar Empresa</button>
+    </div>
+
+    <div class="list" id="lista"></div>
+
+    <div class="back">
+      <a href="./index.html">⬅ Voltar para Home</a>
+    </div>
+  </div>
+
+  <script>
+    function carregar(){
+      const lista = document.getElementById("lista");
+      lista.innerHTML = "<h3>Empresas cadastradas</h3>";
+
+      const dados = JSON.parse(localStorage.getItem("sst_companies") || "[]");
+
+      if(dados.length === 0){
+        lista.innerHTML += "<p style='color:#777'>Nenhuma empresa cadastrada.</p>";
+        return;
+      }
+
+      dados.forEach((e,i)=>{
+        lista.innerHTML += `
+          <div class="empresa">
+            <strong>${i+1}. ${e.empresa}</strong><br>
+            CNPJ: ${e.cnpj}<br>
+            Responsável: ${e.responsavel || "-"}<br>
+            CNAE: ${e.cnae || "-"}
+          </div>
+        `;
+      });
+    }
+
+    function salvarEmpresa(){
+      const empresa = document.getElementById("empresa").value.trim();
+      const cnpj = document.getElementById("cnpj").value.trim();
+
+      if(!empresa || !cnpj){
+        alert("Empresa e CNPJ são obrigatórios.");
+        return;
+      }
+
+      const dados = JSON.parse(localStorage.getItem("sst_companies") || "[]");
+
+      dados.push({
+        empresa,
+        cnpj,
+        email: email.value,
+        telefone: telefone.value,
+        responsavel: responsavel.value,
+        cnae: cnae.value,
+        endereco: endereco.value,
+        obs: obs.value,
+        criadoEm: new Date().toISOString()
+      });
+
+      localStorage.setItem("sst_companies", JSON.stringify(dados));
+
+      document.querySelectorAll("input, textarea").forEach(e=>e.value="");
+      carregar();
+      alert("Empresa salva com sucesso!");
+    }
+
+    carregar();
+  </script>
+</body>
+</html>
